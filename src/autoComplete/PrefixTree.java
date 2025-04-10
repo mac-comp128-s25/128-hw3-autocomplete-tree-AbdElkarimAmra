@@ -1,6 +1,7 @@
 package autoComplete;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,7 +25,20 @@ public class PrefixTree {
      * @param word
      */
     public void add(String word){
-        //TODO: complete me
+        TreeNode temp = root;
+
+        for (int i = 0; i < word.length(); i++) {   
+            Character character = word.charAt(i);
+            temp.children.putIfAbsent(character, new TreeNode());
+            temp = temp.children.get(character);
+
+        }
+        
+        if (!temp.isWord) {
+            temp.isWord = true;
+            size++;
+        }
+        
     }
 
     /**
@@ -32,9 +46,22 @@ public class PrefixTree {
      * @param word
      * @return true if contained in the tree.
      */
-    public boolean contains(String word){
-        //TODO: complete me
+    public boolean contains(String word){        
+        TreeNode temp = root;
+
+        for (int i = 0; i < word.length(); i++) {
+            char c = word.charAt(i);
+
+            if (!temp.children.containsKey(c)) {
+                return false;
+            }
+            temp = temp.children.get(c);
+        }
+        if (temp.isWord) {
+            return true;
+        }
         return false;
+
     }
 
     /**
@@ -44,8 +71,36 @@ public class PrefixTree {
      * @return list of words with prefix
      */
     public ArrayList<String> getWordsForPrefix(String prefix){
-        //TODO: complete me
-        return null;
+        ArrayList<String> words = new ArrayList<>();
+        TreeNode current = root;
+    
+        for (int i = 0; i < prefix.length(); i++) {
+            char c = prefix.charAt(i);
+            if (!current.children.containsKey(c)) {
+                return words;
+            }
+            current = current.children.get(c);
+        }
+    
+        if (current.isWord) {
+            words.add(prefix);
+        }
+        findWords(current, prefix, words);
+        return words;
+    }
+    
+    private void findWords(TreeNode node, String word, ArrayList<String> result) {   
+        for (Map.Entry<Character, TreeNode> entry : node.children.entrySet()) {
+            Character key = entry.getKey();
+            TreeNode next = entry.getValue();
+            String newWord = word + key;
+    
+            if (next.isWord == true) {
+                result.add(newWord);
+            }
+    
+            findWords(next, newWord, result);
+        }
     }
 
     /**
